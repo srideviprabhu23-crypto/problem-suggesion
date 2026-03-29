@@ -1,0 +1,8 @@
+{
+  "name": "VisionFix AI",
+  "description": "Point your camera at any real-world problem to get instant solutions and find nearby repair shops.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
