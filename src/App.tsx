@@ -149,7 +149,13 @@ export default function App() {
     setGrounding([]);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const apiKey = process.env.GEMINI_API_KEY;
+      
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey.length < 10) {
+        throw new Error("Gemini API Key is missing or invalid. Please configure it in your environment variables.");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       const model = "gemini-3-flash-preview";
 
       const base64Data = base64Image.split(',')[1];
@@ -188,7 +194,11 @@ export default function App() {
         }
       });
 
-      const text = response.text;
+      if (!response || !response.candidates || response.candidates.length === 0) {
+        throw new Error("No analysis received from AI. Please try a clearer photo.");
+      }
+
+      const text = response.text || "No detailed description available, but check the map below for help.";
       
       const severityMatch = text.match(/severity:\s*(Low|Medium|High)/i);
       const costMatch = text.match(/cost:\s*([^\n]+)/i);
@@ -208,9 +218,12 @@ export default function App() {
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
       setGrounding(chunks as GroundingChunk[]);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("AI Analysis error:", err);
-      setError("Failed to analyze image. Please try again.");
+      const message = err.message || "An unexpected error occurred during analysis.";
+      setError(message.includes("API_KEY_INVALID") 
+        ? "Invalid API Key. Please check your Gemini API settings." 
+        : message);
     } finally {
       setIsAnalyzing(false);
     }
