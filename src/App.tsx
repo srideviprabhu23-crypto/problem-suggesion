@@ -152,7 +152,8 @@ export default function App() {
       const apiKey = process.env.GEMINI_API_KEY;
       
       if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey.length < 10) {
-        throw new Error("Gemini API Key is missing or invalid. Please configure it in your environment variables.");
+        setError("API_KEY_MISSING");
+        return;
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -334,7 +335,44 @@ export default function App() {
 
         {/* Results Section */}
         <AnimatePresence>
-          {error && (
+          {error === "API_KEY_MISSING" && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="glass-panel p-8 flex flex-col items-center text-center gap-6 border-hardware-accent/30"
+            >
+              <div className="w-16 h-16 bg-hardware-accent/20 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-hardware-accent" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold">API Key Required</h3>
+                <p className="text-sm text-hardware-muted leading-relaxed">
+                  To use VisionFix AI, you need to add your Gemini API Key to your deployment environment variables.
+                </p>
+              </div>
+              
+              <div className="w-full space-y-3 text-left">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                  <p className="text-[10px] font-mono text-hardware-muted uppercase mb-1">Variable Name</p>
+                  <code className="text-xs text-hardware-accent font-mono">GEMINI_API_KEY</code>
+                </div>
+                <a 
+                  href="https://aistudio.google.com/app/apikey" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all"
+                >
+                  Get API Key <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+
+              <p className="text-[10px] text-hardware-muted italic">
+                After adding the key in Vercel/Cloud Run settings, please redeploy your application.
+              </p>
+            </motion.div>
+          )}
+
+          {error && error !== "API_KEY_MISSING" && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
